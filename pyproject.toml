@@ -1,0 +1,57 @@
+[project]
+name = "weather-etl"
+version = "0.1.0"
+description = "Daily weather ETL pipeline: OpenWeatherMap API → PySpark → PostgreSQL, orchestrated by Apache Airflow"
+readme = "README.md"
+requires-python = ">=3.11"
+
+dependencies = [
+    # Airflow core
+    "apache-airflow==2.9.1",
+    # Airflow providers
+    "apache-airflow-providers-apache-spark==4.7.1",
+    "apache-airflow-providers-postgres==5.10.2",
+    # HTTP
+    "requests==2.31.0",
+    # Data
+    "pandas==2.1.4",
+    "pyarrow==14.0.2",
+    # Database
+    "sqlalchemy==1.4.52",
+    "psycopg2-binary==2.9.9",
+    # Spark
+    "pyspark==3.5.1",
+]
+
+[project.optional-dependencies]
+# Install with: uv sync --extra spark
+spark = [
+    "pyspark==3.5.1",
+]
+# Install with: uv sync --extra dev
+dev = [
+    "pytest==8.2.0",
+    "pytest-mock==3.14.0",
+    "ruff==0.4.4",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+package = false
+
+
+[tool.uv.sources]
+# All packages from PyPI (default)
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]   # pycodestyle + pyflakes + isort
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

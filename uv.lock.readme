@@ -1,0 +1,13 @@
+# This file is generated automatically by uv.
+# Run `uv lock` in the project root to generate/update it.
+# Commit this file to version control to pin exact dependency versions.
+#
+# To generate:
+#   uv lock
+#
+# To install from lockfile (exact reproducible versions):
+#   uv sync
+#
+# To add a new dependency:
+#   uv add <package>        # adds to [dependencies] in pyproject.toml
+#   uv add --dev <package>  # adds to [dev] optional-dependencies
