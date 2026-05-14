@@ -29,18 +29,6 @@ CLEAN_SCHEMA = StructType([
 
 
 def flatten_raw_json(raw: dict) -> Row:
-    """
-    Convert the nested OpenWeatherMap JSON into a single flat Row.
-
-    Example input (trimmed):
-    {
-      "name": "Bangkok",
-      "main": {"temp": 33.5, "feels_like": 40.2, "humidity": 72, "pressure": 1008},
-      "weather": [{"description": "clear sky"}],
-      "wind": {"speed": 3.1},
-      "dt": 1715000000
-    }
-    """
     ts = datetime.utcfromtimestamp(raw.get("dt", 0))
 
     return Row(

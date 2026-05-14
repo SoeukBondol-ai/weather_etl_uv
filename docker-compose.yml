@@ -10,7 +10,7 @@ x-airflow-common: &airflow-common
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth'
     AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: 'true'
-    AIRFLOW_CONN_SPARK_DEFAULT: 'spark://local[*]'
+    AIRFLOW_CONN_SPARK_DEFAULT: 'spark://local'
     AIRFLOW_CONN_POSTGRES_WEATHER: 'postgresql+psycopg2://weather:weather@postgres/weather_db'
     JAVA_HOME: '/usr/lib/jvm/java-17-openjdk-amd64'
     OPENWEATHER_API_KEY: ${OPENWEATHER_API_KEY}

@@ -1,9 +1,3 @@
--- ============================================================
--- queries.sql — useful queries to verify and explore data
--- Run these in pgAdmin, DBeaver, or psql
--- Connect: host=localhost port=5432 db=weather_db user=weather password=weather
--- ============================================================
-
 -- 1. View all loaded records
 SELECT * FROM weather_data ORDER BY loaded_at DESC LIMIT 20;
 

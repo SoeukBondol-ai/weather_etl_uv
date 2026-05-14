@@ -1,10 +1,4 @@
--- ============================================================
--- This file runs automatically when PostgreSQL container
--- starts for the first time (docker-entrypoint-initdb.d)
--- ============================================================
 
--- Create a separate database for weather data
--- (Airflow metadata uses the default 'airflow' database)
 CREATE DATABASE weather_db;
 
 -- Connect to weather_db and create user + table

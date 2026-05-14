@@ -7,7 +7,7 @@ FROM apache/airflow:2.9.1-python3.11
 USER root
 
 # Install Java (required by SparkSubmitOperator to launch spark-submit)
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update -o Acquire::Check-Valid-Until=false -o Acquire::Check-Date=false && apt-get install -y --no-install-recommends \
     openjdk-17-jdk-headless \
     curl \
     && apt-get clean \
