@@ -25,7 +25,6 @@ USER airflow
 COPY pyproject.toml /opt/airflow/pyproject.toml
 
 # Install dependencies from pyproject.toml using uv
-# --system  → installs into the system Python (no separate venv inside Docker)
-# --no-cache → keeps image size small
-RUN uv pip install --system --no-cache -r /opt/airflow/pyproject.toml
+RUN uv pip install --system --no-cache -r /opt/airflow/pyproject.toml --extra spark
+
 

@@ -61,12 +61,9 @@ def extract_weather(**kwargs):
     is_placeholder_key = not API_KEY or API_KEY in ["YOUR_OPENWEATHER_API_KEY", "YOUR_API_KEY", ""]
 
     if is_placeholder_key:
-        log.warning(
-            "No valid OpenWeatherMap API key found. "
-            "Falling back to simulated weather data."
-        )
-        write_simulated_weather(**kwargs)
-        return
+        error_msg = "No valid OpenWeatherMap API key found. Please configure OPENWEATHER_API_KEY in .env."
+        log.error(error_msg)
+        raise ValueError(error_msg)
 
     url = (
         "https://api.openweathermap.org/data/2.5/weather"
@@ -86,72 +83,14 @@ def extract_weather(**kwargs):
         log.info(f"  City     : {data.get('name')}")
         log.info(f"  Temp     : {data['main']['temp']} °C")
         log.info(f"  Humidity : {data['main']['humidity']} %")
+        
+        if "ti" in kwargs:
+            kwargs["ti"].xcom_push(key="raw_path", value=RAW_PATH)
+        return RAW_PATH
     except Exception as e:
-        log.warning(
-            f"Failed to fetch real weather data due to: {e}. "
-            "Falling back to simulated weather data."
-        )
-        write_simulated_weather(**kwargs)
+        log.error(f"Failed to fetch real weather data due to: {e}")
+        raise
 
-
-def write_simulated_weather(**kwargs):
-    """Generate realistic simulated weather data for testing."""
-    import random
-    import time
-
-    simulated_data = {
-        "coord": {"lon": 100.5167, "lat": 13.75},
-        "weather": [
-            {
-                "id": 801,
-                "main": "Clouds",
-                "description": "few clouds",
-                "icon": "02d"
-            }
-        ],
-        "base": "stations",
-        "main": {
-            "temp": round(random.uniform(28.0, 36.0), 1),
-            "feels_like": round(random.uniform(31.0, 42.0), 1),
-            "temp_min": 27.0,
-            "temp_max": 37.0,
-            "pressure": 1008,
-            "humidity": random.randint(55, 85)
-        },
-        "visibility": 10000,
-        "wind": {
-            "speed": round(random.uniform(1.5, 6.0), 1),
-            "deg": 180
-        },
-        "clouds": {
-            "all": 20
-        },
-        "dt": int(time.time()),
-        "sys": {
-            "type": 1,
-            "id": 8183,
-            "country": "TH",
-            "sunrise": int(time.time()) - 10000,
-            "sunset": int(time.time()) + 10000
-        },
-        "timezone": 25200,
-        "id": 1609350,
-        "name": CITY,
-        "cod": 200
-    }
-
-    with open(RAW_PATH, "w") as f:
-        json.dump(simulated_data, f, indent=2)
-
-    log.info(f"Simulated raw data saved to {RAW_PATH}")
-    log.info(f"  City     : {simulated_data.get('name')}")
-    log.info(f"  Temp     : {simulated_data['main']['temp']} °C")
-    log.info(f"  Humidity : {simulated_data['main']['humidity']} %")
-
-    # Push file path to XCom if ti is present in kwargs
-    if "ti" in kwargs:
-        kwargs["ti"].xcom_push(key="raw_path", value=RAW_PATH)
-    return RAW_PATH
 
 
 # ══════════════════════════════════════════════════════════════════════════════

@@ -19,9 +19,8 @@ dependencies = [
     # Database
     "sqlalchemy==1.4.52",
     "psycopg2-binary==2.9.9",
-    # Spark
-    "pyspark==3.5.1",
 ]
+
 
 [project.optional-dependencies]
 # Install with: uv sync --extra spark
