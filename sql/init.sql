@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS weather_data (
     humidity    INTEGER,
     pressure    INTEGER,
     wind_speed  NUMERIC(5,2),
+    clouds      INTEGER,
     description TEXT,
     heat_index  VARCHAR(20),
     recorded_at TIMESTAMP,

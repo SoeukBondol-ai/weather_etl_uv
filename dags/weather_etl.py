@@ -27,6 +27,7 @@ class WeatherData(Base):
     humidity    = Column(Integer)
     pressure    = Column(Integer)
     wind_speed  = Column(Numeric(5, 2))
+    clouds      = Column(Integer)
     description = Column(Text)
     heat_index  = Column(String(20))
     recorded_at = Column(DateTime)
@@ -35,7 +36,7 @@ class WeatherData(Base):
 
 # ── Config from environment variables ──────────────────────────────────────────
 API_KEY    = os.getenv("OPENWEATHER_API_KEY", "YOUR_API_KEY")
-CITY       = os.getenv("WEATHER_CITY", "Bangkok")
+CITY       = os.getenv("WEATHER_CITY", "Phnom Penh")
 RAW_PATH   = "/opt/airflow/data/weather_raw.json"
 CLEAN_PATH = "/opt/airflow/data/weather_clean"
 DB_CONN    = "postgresql+psycopg2://weather:weather@postgres/weather_db"

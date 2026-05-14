@@ -14,7 +14,7 @@ x-airflow-common: &airflow-common
     AIRFLOW_CONN_POSTGRES_WEATHER: 'postgresql+psycopg2://weather:weather@postgres/weather_db'
     JAVA_HOME: '/usr/lib/jvm/java-17-openjdk-amd64'
     OPENWEATHER_API_KEY: ${OPENWEATHER_API_KEY}
-    WEATHER_CITY: ${WEATHER_CITY:-Bangkok}
+    WEATHER_CITY: ${WEATHER_CITY:-Phnom Penh}
   volumes:
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs

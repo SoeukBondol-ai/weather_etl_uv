@@ -23,6 +23,7 @@ CLEAN_SCHEMA = StructType([
     StructField("humidity",    IntegerType(),   True),
     StructField("pressure",    IntegerType(),   True),
     StructField("wind_speed",  FloatType(),     True),
+    StructField("clouds",      IntegerType(),   True),
     StructField("description", StringType(),    True),
     StructField("recorded_at", TimestampType(), True),
 ])
@@ -38,6 +39,7 @@ def flatten_raw_json(raw: dict) -> Row:
         humidity    = int(raw["main"].get("humidity", 0)),
         pressure    = int(raw["main"].get("pressure", 0)),
         wind_speed  = float(raw.get("wind", {}).get("speed", 0.0)),
+        clouds      = int(raw.get("clouds", {}).get("all", 0)),
         description = str(raw["weather"][0]["description"])
                       if raw.get("weather") else "unknown",
         recorded_at = ts,
