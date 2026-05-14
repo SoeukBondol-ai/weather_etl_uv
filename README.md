@@ -15,24 +15,34 @@
 
 This is a modern, production-ready, fully-dockerized daily Weather ETL (Extract, Transform, Load) data pipeline. It demonstrates industry-standard practices for orchestration, large-scale processing, object-relational mapping, and lightning-fast virtual environment management.
 
-```mermaid
-graph TD
-    A[OpenWeatherMap API] -->|1. Extract: HTTP GET| B(extract_weather: PythonOperator)
-    B -->|Writes: weather_raw.json| C[Shared Vol: data/]
-    C -->|2. Transform| D(transform_with_spark: SparkSubmitOperator)
-    D -->|Executes: Local PySpark| D
-    D -->|Writes: weather_clean/*.parquet| C
-    C -->|3. Load| E(load_to_postgres: PythonOperator)
-    E -->|Reads Parquet, Maps schemas via SQLAlchemy| E
-    E -->|High-Performance Bulk Insert| F[(PostgreSQL: weather_db)]
-
-    style A fill:#4CAF50,stroke:#388E3C,stroke-width:2px,color:#fff
-    style B fill:#017CEB,stroke:#0d6efd,stroke-width:2px,color:#fff
-    style C fill:#9C27B0,stroke:#7B1FA2,stroke-width:2px,color:#fff
-    style D fill:#E25A1C,stroke:#d04b10,stroke-width:2px,color:#fff
-    style E fill:#017CEB,stroke:#0d6efd,stroke-width:2px,color:#fff
-    style F fill:#4169E1,stroke:#2b50c7,stroke-width:2px,color:#fff
+```text
+            [ OpenWeather API ]
+                     │
+                     │ Request to get API
+                     ▼
+        [ Extract Python Operator ]
+                     │
+                     │ weather_raw.json
+                     ▼
+           [ Shared Volume Data ]
+                     │
+                     │ Read raw data JSON
+                     ▼
+          [ SparkSubmitOperator ]
+                     │
+                     │ Write clean data Parquet
+                     ▼
+         [ weather_clean/*.parquet ]
+                     │
+                     │ Reads Parquet
+                     ▼
+           [ Load to SQLAlchemy ]
+                     │
+                     │ Bulk Insert
+                     ▼
+        [ PostgreSQL (weather_db) ]
 ```
+
 
 ### Key Architectural Highlights
 - **Apache Airflow Orchestration:** Automatically schedules and monitors daily jobs, with explicit failure retry limits.
