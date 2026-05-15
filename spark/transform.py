@@ -15,7 +15,7 @@ from pyspark.sql.types import (
     TimestampType,
 )
 
-# ── Schema for the cleaned DataFrame ──────────────────────────────────────────
+# -- Schema for the cleaned DataFrame ------------------------------------------
 CLEAN_SCHEMA = StructType([
     StructField("city",        StringType(),    True),
     StructField("temp_c",      FloatType(),     True),
@@ -25,12 +25,20 @@ CLEAN_SCHEMA = StructType([
     StructField("wind_speed",  FloatType(),     True),
     StructField("clouds",      IntegerType(),   True),
     StructField("description", StringType(),    True),
+    StructField("aqi",         IntegerType(),   True),
+    StructField("pm2_5",       FloatType(),     True),
+    StructField("pm10",        FloatType(),     True),
     StructField("recorded_at", TimestampType(), True),
 ])
 
 
 def flatten_raw_json(raw: dict) -> Row:
     ts = datetime.utcfromtimestamp(raw.get("dt", 0))
+    
+    # Extract AQI info if present
+    aqi_obj = raw.get("air_quality", {})
+    aqi_val = aqi_obj.get("main", {}).get("aqi")
+    components = aqi_obj.get("components", {})
 
     return Row(
         city        = str(raw.get("name", "unknown")),
@@ -42,6 +50,9 @@ def flatten_raw_json(raw: dict) -> Row:
         clouds      = int(raw.get("clouds", {}).get("all", 0)),
         description = str(raw["weather"][0]["description"])
                       if raw.get("weather") else "unknown",
+        aqi         = int(aqi_val) if aqi_val is not None else None,
+        pm2_5       = float(components.get("pm2_5", 0.0)),
+        pm10        = float(components.get("pm10", 0.0)),
         recorded_at = ts,
     )
 
@@ -49,19 +60,19 @@ def flatten_raw_json(raw: dict) -> Row:
 def transform(raw_path: str, output_path: str):
     """Main transform function."""
 
-    # ── 1. Start Spark ────────────────────────────────────────────────────────
+    # -- 1. Start Spark --------------------------------------------------------
     spark = SparkSession.builder \
         .appName("WeatherETL_Transform") \
         .getOrCreate()
 
     spark.sparkContext.setLogLevel("WARN")
     print(f"\n{'='*60}")
-    print("  WeatherETL — Transform Step")
+    print("  WeatherETL - Transform Step")
     print(f"  Input  : {raw_path}")
     print(f"  Output : {output_path}")
     print(f"{'='*60}\n")
 
-    # ── 2. Read raw JSON ──────────────────────────────────────────────────────
+    # -- 2. Read raw JSON ------------------------------------------------------
     if not os.path.exists(raw_path):
         raise FileNotFoundError(f"Raw JSON not found: {raw_path}")
 
@@ -80,7 +91,7 @@ def transform(raw_path: str, output_path: str):
 
     df = spark.createDataFrame(rows, schema=CLEAN_SCHEMA)
 
-    # ── 3. Clean & transform ─────────────────────────────────────────────────
+    # -- 3. Clean & transform ------------------------------------------------
     df_clean = df \
         .withColumn("city",
             lower(trim(col("city")))) \
@@ -101,16 +112,23 @@ def transform(raw_path: str, output_path: str):
             .otherwise(lit("cold"))) \
         .filter(col("temp_c").isNotNull()) \
         .filter(col("humidity").between(0, 100)) \
-        .filter(col("temp_c").between(-60, 60))
+        .filter(col("temp_c").between(-60, 60)) \
+        .withColumn("comfort_level",
+            when(col("aqi") >= 4, lit("Poor Air Quality"))
+            .when((col("temp_c") > 32) & (col("humidity") > 70), lit("Very Muggy"))
+            .when((col("temp_c") > 28) & (col("humidity") > 60), lit("Sticky"))
+            .when((col("temp_c").between(18, 25)) & (col("aqi") <= 2), lit("Ideal"))
+            .when(col("temp_c") < 10, lit("Chilly"))
+            .otherwise(lit("Moderate")))
 
-    # ── 4. Show summary ───────────────────────────────────────────────────────
+    # -- 4. Show summary ------------------------------------------------------
     print("\n  Cleaned DataFrame preview:")
     df_clean.show(truncate=False)
     print("\n  Schema:")
     df_clean.printSchema()
     print(f"\n  Total clean rows: {df_clean.count()}")
 
-    # ── 5. Write Parquet ──────────────────────────────────────────────────────
+    # -- 5. Write Parquet ------------------------------------------------------
     os.makedirs(output_path, exist_ok=True)
 
     df_clean.write \
@@ -123,7 +141,7 @@ def transform(raw_path: str, output_path: str):
     spark.stop()
 
 
-# ── Entrypoint ─────────────────────────────────────────────────────────────────
+# -- Entrypoint ----------------------------------------------------------------
 if __name__ == "__main__":
     if len(sys.argv) != 3:
         print("Usage: spark-submit transform.py <raw_json_path> <output_parquet_path>")
