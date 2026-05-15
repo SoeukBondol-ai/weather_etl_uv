@@ -10,18 +10,23 @@ GRANT ALL ON SCHEMA public TO weather;
 
 -- Weather data table
 CREATE TABLE IF NOT EXISTS weather_data (
-    id          SERIAL PRIMARY KEY,
-    city        VARCHAR(100)   NOT NULL,
-    temp_c      NUMERIC(5,1),
-    feels_like  NUMERIC(5,1),
-    humidity    INTEGER,
-    pressure    INTEGER,
-    wind_speed  NUMERIC(5,2),
-    clouds      INTEGER,
-    description TEXT,
-    heat_index  VARCHAR(20),
-    recorded_at TIMESTAMP,
-    loaded_at   TIMESTAMP      DEFAULT NOW()
+    id           SERIAL PRIMARY KEY,
+    city         VARCHAR(100)   NOT NULL,
+    temp_c       NUMERIC(5,1),
+    feels_like   NUMERIC(5,1),
+    humidity     INTEGER,
+    pressure     INTEGER,
+    wind_speed   NUMERIC(5,2),
+    clouds       INTEGER,
+    description  TEXT,
+    heat_index   VARCHAR(20),
+    aqi          INTEGER,        -- Air Quality Index (1-5)
+    pm2_5        NUMERIC(6,2),   -- Particulate Matter 2.5
+    pm10         NUMERIC(6,2),   -- Particulate Matter 10
+    comfort_level VARCHAR(50),   -- Calculated comfort status
+    is_trend_up  BOOLEAN,        -- True if temp increased since last run
+    recorded_at  TIMESTAMP,
+    loaded_at    TIMESTAMP      DEFAULT NOW()
 );
 
 -- Index for common queries
