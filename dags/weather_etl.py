@@ -36,7 +36,7 @@ class WeatherData(Base):
 
 # ── Config from environment variables ──────────────────────────────────────────
 API_KEY    = os.getenv("OPENWEATHER_API_KEY", "YOUR_API_KEY")
-CITY       = os.getenv("WEATHER_CITY", "Phnom Penh")
+CITIES     = os.getenv("WEATHER_CITIES", "Phnom Penh,Tokyo,London,New York,Sydney,Paris")
 RAW_PATH   = "/opt/airflow/data/weather_raw.json"
 CLEAN_PATH = "/opt/airflow/data/weather_clean"
 DB_CONN    = "postgresql+psycopg2://weather:weather@postgres/weather_db"
@@ -66,31 +66,40 @@ def extract_weather(**kwargs):
         log.error(error_msg)
         raise ValueError(error_msg)
 
-    url = (
-        "https://api.openweathermap.org/data/2.5/weather"
-        f"?q={CITY}&appid={API_KEY}&units=metric"
-    )
-    log.info(f"Fetching weather for city: {CITY}")
+    city_list = [c.strip() for c in CITIES.split(",")]
+    all_weather_data = []
 
-    try:
-        response = requests.get(url, timeout=10)
-        response.raise_for_status()
-        data = response.json()
-        
-        with open(RAW_PATH, "w") as f:
-            json.dump(data, f, indent=2)
+    for city in city_list:
+        url = (
+            "https://api.openweathermap.org/data/2.5/weather"
+            f"?q={city}&appid={API_KEY}&units=metric"
+        )
+        log.info(f"Fetching weather for city: {city}")
 
-        log.info(f"Raw data saved to {RAW_PATH}")
-        log.info(f"  City     : {data.get('name')}")
-        log.info(f"  Temp     : {data['main']['temp']} °C")
-        log.info(f"  Humidity : {data['main']['humidity']} %")
-        
-        if "ti" in kwargs:
-            kwargs["ti"].xcom_push(key="raw_path", value=RAW_PATH)
-        return RAW_PATH
-    except Exception as e:
-        log.error(f"Failed to fetch real weather data due to: {e}")
-        raise
+        try:
+            response = requests.get(url, timeout=10)
+            response.raise_for_status()
+            data = response.json()
+            all_weather_data.append(data)
+            
+            log.info(f"  City     : {data.get('name')}")
+            log.info(f"  Temp     : {data['main']['temp']} °C")
+            log.info(f"  Humidity : {data['main']['humidity']} %")
+        except Exception as e:
+            log.error(f"Failed to fetch weather data for {city} due to: {e}")
+            continue
+
+    if not all_weather_data:
+        raise ValueError("Failed to fetch weather data for all cities")
+
+    with open(RAW_PATH, "w") as f:
+        json.dump(all_weather_data, f, indent=2)
+
+    log.info(f"Raw data saved to {RAW_PATH} with {len(all_weather_data)} records")
+    
+    if "ti" in kwargs:
+        kwargs["ti"].xcom_push(key="raw_path", value=RAW_PATH)
+    return RAW_PATH
 
 
 

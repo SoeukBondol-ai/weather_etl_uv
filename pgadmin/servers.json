@@ -1,0 +1,13 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "Weather Data Warehouse",
+      "Group": "Servers",
+      "Host": "postgres",
+      "Port": 5432,
+      "MaintenanceDB": "weather_db",
+      "Username": "weather",
+      "SSLMode": "prefer"
+    }
+  }
+}
